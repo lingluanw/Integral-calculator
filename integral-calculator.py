@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from sympy import symbols, integrate, sympify, oo, pi, E
+from sympy import symbols, integrate, sympify, oo, pi
 from re import sub
 
 def format_expression(expression)
