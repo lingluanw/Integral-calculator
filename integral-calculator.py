@@ -1,10 +1,37 @@
 import tkinter as tk
 from tkinter import messagebox
 from sympy import symbols, integrate, sympify, oo, pi, E
+from re import sub
+
+def format_expression(expression)
+    # 预处理反三角函数
+    expression_f = (expression.replace("arcsin", "asin")
+                            .replace("arccos", "acos")
+                            .replace("arctan", "atan")
+                            .replace("arccsc", "acsc")
+                            .replace("arcsec", "asec")
+                            .replace("arccot", "acot")
+                            )
+    return expression_f
+                     
+def format_output(result):
+    result_str = str(result)
+    # 替换反三角函数
+    result_str = result_str.replace("asin", "arcsin") \
+                          .replace("acos", "arccos") \
+                          .replace("atan", "arctan") \
+                          .replace("acsc", "arccsc") \
+                          .replace("asec", "arcsec") \
+                          .replace("acot", "arccot")
+    # 正则匹配 log(开头，后面不含逗号的表达式)替换为ln
+    result_str = sub(r'log\(([^,]+)\)', r'ln(\1)', result_str)
+    return result_str
 
 def calculate_integral():
     var = symbols('x')
-    expression = entry_expression.get()
+    expression = entry_expression.get().strip()
+    expression_f = format_expression(expression)
+    expr = sympify(expression_f)
     
     if integral_type.get() == "definite":
         lower_text = entry_lower.get()
@@ -16,10 +43,8 @@ def calculate_integral():
                 return oo
             elif text == "-":
                 return -oo
-            elif text.lower() == "pi":  # 处理 pi和自然对数e
+            elif text.lower() == "pi":  # 处理 pi
                 return pi
-            elif text == "E":
-                return E
             else:
                 try:
                     return float(text)
@@ -34,16 +59,15 @@ def calculate_integral():
             return  # 输入无效，直接返回
         
         try:
-            expr = sympify(expression)
             result = integrate(expr, (var, lower_limit, upper_limit))
             messagebox.showinfo("计算结果", f"定积分结果为：{result}")
         except Exception as e:
             messagebox.showerror("错误", f"输入无效: {e}")
     else:
         try:
-            expr = sympify(expression)
             result = integrate(expr, var)
-            messagebox.showinfo("计算结果", f"不定积分结果为：{result} + C")
+            result_str = format_output(result)
+            messagebox.showinfo("计算结果", f"不定积分结果为：{result_str} + C")
         except Exception as e:
             messagebox.showerror("错误", f"输入无效: {e}")
 
@@ -55,13 +79,14 @@ def show_special_rules():
             "• 除号使用'/'\n" \
             "• 圆周率用'pi'表示\n" \
             "• 自然对数e用'E'表示\n" \
+            "• 虚数单位用'I'表示\n" \
             "• 三角函数直接使用sin、cos、tan等，其表达式用括号括起来\n" \
             "  例如：sin(x)和sin(2*x+1)\n" \
-            "• 反三角函数如arcsin、arccos、arctan等无法使用该程序求解\n" \
-            "• 自然对数函数：log(x)（e为底）\n" \
+            "• 自然对数函数：ln(x)（e为底）\n" \
             "• 以a为底n的对数表示为'log(n, a)'\n" \
             "• 定积分的上下限如果是正无穷或负无穷，直接输入+或-\n" \
             "• Abs(x)表示x的绝对值\n" \
+            "• Piecewise表示分段函数\n" \
             "• exp(x)表示自然对数e的x次幂"
     messagebox.showinfo("输入规则说明", rules)
 
@@ -115,11 +140,4 @@ entry_expression.grid(row=4, column=1, padx=5, pady=5, sticky="w")
 
 # 按钮区域
 button_frame = tk.Frame(frame)
-button_frame.grid(row=5, column=0, columnspan=2, pady=15)
-tk.Button(button_frame, text="计算", command=calculate_integral, width=10).pack(side="left", padx=10)
-tk.Button(button_frame, text="输入规则", command=show_special_rules, width=10).pack(side="left", padx=10)
-
-# 初始化UI状态
-update_ui()
-
-app.mainloop()
+button_frame.grid(row=5, column=0, columnspan=2, pady=1
